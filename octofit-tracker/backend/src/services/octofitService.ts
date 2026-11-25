@@ -135,8 +135,35 @@ export async function getLeaderboard() {
   }));
 }
 
-export async function suggestWorkouts(_userEmail: string) {
-  return Workout.find().limit(1).lean();
+export async function suggestWorkouts(userEmail: string) {
+  const user = await User.findOne({ email: userEmail });
+  if (!user) {
+    throw validationError('User not found', 404);
+  }
+
+  const focusByActivityType: Record<string, string> = {
+    run: 'endurance',
+    cycle: 'endurance',
+    walk: 'endurance',
+    strength: 'strength',
+    yoga: 'mobility',
+    stretch: 'mobility',
+  };
+  const activities = await Activity.find({ user: user._id }).sort({ occurredAt: -1 }).lean();
+  const activityFocus = activities
+    .map((activity) => focusByActivityType[activity.type.toLowerCase()] ?? activity.type.toLowerCase())
+    .find((focus) => focus.length > 0);
+  const focus = activityFocus ?? user.fitnessGoal?.toLowerCase();
+
+  const workouts = await Workout.find().lean();
+  return workouts
+    .map((workout) => ({
+      ...workout,
+      reason: (workout.focus ?? '').toLowerCase() === focus
+        ? `Recommended based on your ${activities.length ? 'activity pattern' : 'fitness goal'} (${focus}).`
+        : `Alternative workout for ${workout.focus ?? 'general fitness'}.`,
+    }))
+    .sort((left, right) => Number((right.focus ?? '').toLowerCase() === focus) - Number((left.focus ?? '').toLowerCase() === focus));
 }
 
 export { User };
