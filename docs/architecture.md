@@ -30,14 +30,13 @@ OctoFit Tracker is a three-tier application for a school fitness program. The st
 
 Record your plan here before editing code.
 
-- **Presentation tier decision**: Use React Router routes and the shared `getJson` API client. Keep loading, empty, success, and error states in each route component and expose them through semantic, accessible markup.
-- **Logic tier decision**: Keep Express routes thin and put validation and database behavior in explicit service functions. Return deliberate 400 or 404 responses for invalid input or missing records instead of allowing Mongoose cast errors to become 500 responses.
-- **Data tier decision**: Add Mongoose `required` validation and meaningful defaults to the User, Team, Activity, and Workout schemas. Preserve application data and make seed updates idempotent with stable upserts.
-- **Business tier decision**:
-  - *Activity tracking approach*: Validate ObjectIds and require the referenced user and team to exist. Store the submitted references, type, and minutes, then compute points and set `occurredAt` in the service.
-  - *Team management approach*: Require `name` and `mascot`, default `members` to an empty array, and create the team with submitted valid member references.
-  - *Leaderboard approach*: Aggregate activity points by team, sort descending, and add a 1-based rank to each team result.
-  - *Workout suggestions approach*: Find the user by decoded email, determine the user's goal or strongest recent activity focus, and return matching workouts first with a reason.
+- Presentation tier decision: Use React Router routes and the shared `getJson` API client. Keep loading, empty, success, and error states in each route component and expose them through semantic, accessible markup.
+- Logic tier decision: Keep Express routes thin and put validation and database behavior in explicit service functions. Return deliberate 400 or 404 responses for invalid input or missing records instead of allowing Mongoose cast errors to become 500 responses.
+- Data tier decision: Add Mongoose `required` validation and meaningful defaults to the User, Team, Activity, and Workout schemas. Preserve application data and make seed updates idempotent with stable upserts.
+- Activity tracking approach: Validate ObjectIds and require the referenced user and team to exist. Store the submitted references, type, and minutes, then compute points and set `occurredAt` in the service.
+- Team management approach: Require `name` and `mascot`, default `members` to an empty array, and create the team with submitted valid member references.  
+- Leaderboard approach: Aggregate activity points by team, sort descending, and add a 1-based rank to each team result.
+- Workout suggestions approach: Find the user by decoded email, determine the user's goal or strongest recent activity focus, and return matching workouts first with a reason.
 
 ## Test plan
 
