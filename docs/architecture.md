@@ -47,3 +47,5 @@ Record the commands you run and what each failure means.
 - Frontend command: `npm test --prefix octofit-tracker/frontend`; baseline is red because the route UI and API-backed states are not implemented (15 of 15 tests fail).
 - Backend build command: `npm run build --prefix octofit-tracker/backend`
 - Frontend build command: `npm run build --prefix octofit-tracker/frontend`
+
+All tests should run successful!
