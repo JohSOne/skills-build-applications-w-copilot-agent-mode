@@ -59,12 +59,80 @@ export async function listTeams() {
   return Team.find().lean();
 }
 
-export async function createTeam(_input: unknown) {
-  throw Object.assign(new Error('Team validation is not implemented yet'), { status: 501 });
+export async function createTeam(input: unknown) {
+  if (!input || typeof input !== 'object') {
+    throw validationError('Team input is required');
+  }
+
+  const { name, mascot, members } = input as {
+    name?: unknown;
+    mascot?: unknown;
+    members?: unknown;
+  };
+  if (typeof name !== 'string' || name.trim().length === 0) {
+    throw validationError('Team name is required');
+  }
+  if (typeof mascot !== 'string' || mascot.trim().length === 0) {
+    throw validationError('Team mascot is required');
+  }
+  if (members !== undefined && !Array.isArray(members)) {
+    throw validationError('Team members must be an array');
+  }
+
+  const memberIds = (members ?? []) as unknown[];
+  if (memberIds.some((id) => typeof id !== 'string' || !mongoose.isValidObjectId(id))) {
+    throw validationError('Team members must contain valid user IDs');
+  }
+  const uniqueMemberIds = [...new Set(memberIds as string[])];
+  const users = await User.find({ _id: { $in: uniqueMemberIds } });
+  if (users.length !== uniqueMemberIds.length) {
+    throw validationError('One or more team members do not exist', 404);
+  }
+
+  const team = await Team.create({
+    name: name.trim(),
+    mascot: mascot.trim(),
+    members: uniqueMemberIds,
+  });
+
+  await Team.updateMany(
+    { _id: { $ne: team._id }, members: { $in: uniqueMemberIds } },
+    { $pull: { members: { $in: uniqueMemberIds } } },
+  );
+  await User.updateMany(
+    { _id: { $in: uniqueMemberIds } },
+    { $set: { team: team._id } },
+  );
+
+  return team.toObject();
 }
 
 export async function getLeaderboard() {
-  return [];
+  const entries = await Activity.aggregate([
+    {
+      $group: {
+        _id: '$team',
+        totalPoints: { $sum: '$points' },
+      },
+    },
+    { $sort: { totalPoints: -1, _id: 1 } },
+    {
+      $lookup: {
+        from: Team.collection.name,
+        localField: '_id',
+        foreignField: '_id',
+        as: 'team',
+      },
+    },
+    { $unwind: '$team' },
+  ]);
+
+  return entries.map((entry, index) => ({
+    teamId: entry.team._id.toString(),
+    teamName: entry.team.name,
+    totalPoints: entry.totalPoints,
+    rank: index + 1,
+  }));
 }
 
 export async function suggestWorkouts(_userEmail: string) {
