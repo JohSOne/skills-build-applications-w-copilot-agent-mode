@@ -30,20 +30,22 @@ OctoFit Tracker is a three-tier application for a school fitness program. The st
 
 Record your plan here before editing code.
 
-- Presentation tier decision:
-- Logic tier decision:
-- Data tier decision:
-- Activity tracking approach:
-- Team management approach:
-- Leaderboard approach:
-- Workout suggestions approach:
+- Presentation tier decision: Use React Router routes and the shared `getJson` API client. Keep loading, empty, success, and error states in each route component and expose them through semantic, accessible markup.
+- Logic tier decision: Keep Express routes thin and put validation and database behavior in explicit service functions. Return deliberate 400 or 404 responses for invalid input or missing records instead of allowing Mongoose cast errors to become 500 responses.
+- Data tier decision: Add Mongoose `required` validation and meaningful defaults to the User, Team, Activity, and Workout schemas. Preserve application data and make seed updates idempotent with stable upserts.
+- Activity tracking approach: Validate ObjectIds and require the referenced user and team to exist. Store the submitted references, type, and minutes, then compute points and set `occurredAt` in the service.
+- Team management approach: Require `name` and `mascot`, default `members` to an empty array, and create the team with submitted valid member references.  
+- Leaderboard approach: Aggregate activity points by team, sort descending, and add a 1-based rank to each team result.
+- Workout suggestions approach: Find the user by decoded email, determine the user's goal or strongest recent activity focus, and return matching workouts first with a reason.
 
 ## Test plan
 
 Record the commands you run and what each failure means.
 
-- Data-tier command: `npm run test:data --prefix octofit-tracker/backend`
-- API command: `npm run test:api --prefix octofit-tracker/backend`
-- Frontend command: `npm test --prefix octofit-tracker/frontend`
+- Data-tier command: `npm run test:data --prefix octofit-tracker/backend`; baseline is red because required fields and seed behavior are incomplete (4 of 5 tests fail, with the seed test already passing).
+- API command: `npm run test:api --prefix octofit-tracker/backend`; baseline is red because activity and team creation return 501, leaderboard returns no entries, and workout suggestions do not match the user's focus (4 of 4 tests fail).
+- Frontend command: `npm test --prefix octofit-tracker/frontend`; baseline is red because the route UI and API-backed states are not implemented (15 of 15 tests fail).
 - Backend build command: `npm run build --prefix octofit-tracker/backend`
 - Frontend build command: `npm run build --prefix octofit-tracker/frontend`
+
+All tests should run successful!
