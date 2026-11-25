@@ -1,4 +1,5 @@
-import { CapabilityCard } from './CapabilityCard.js';
+import {CapabilityCard} from './CapabilityCard.js';
+
 export default function Activities() {
-  return <CapabilityCard title="Activities" description="Track student activity minutes and points." />;
+    return <CapabilityCard title="Activities" description="Track student activity minutes and points."/>;
 }
