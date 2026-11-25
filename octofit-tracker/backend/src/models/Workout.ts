@@ -1,9 +1,9 @@
 import { Schema, model } from 'mongoose';
 
 const workoutSchema = new Schema({
-  title: String,
+  title: { type: String, required: true },
   focus: { type: String, required: true },
-  minutes: { type: Number, required: true },
+  minutes: { type: Number, required: true, min: 1 },
   difficulty: { type: String, required: true },
 });
 
